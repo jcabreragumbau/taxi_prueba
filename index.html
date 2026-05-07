@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi Prueba - Professional Transport</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Taxi Prueba</div>
+        <nav>
+            <ul>
+                <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+                <li><a href="rates.html" data-i18n="nav_rates">Rates</a></li>
+                <li><a href="location.html" data-i18n="nav_location">Service Area</a></li>
+                <li><a href="#book" class="nav-cta" data-i18n="nav_book">Book a Taxi</a></li>
+                <li>
+                    <select id="language-selector">
+                        <option value="en">🇬🇧 EN</option>
+                        <option value="es">🇪🇸 ES</option>
+                    </select>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <h1 data-i18n="hero_title">Your Reliable Ride, Anytime</h1>
+        <p data-i18n="hero_subtitle">Safe, professional transport services at your fingertips.</p>
+        <a href="#book" class="cta-button" data-i18n="hero_btn">Book Now</a>
+    </section>
+
+    <section id="book" class="booking-section">
+        <h2 data-i18n="book_title">Book Your Trip</h2>
+        <p data-i18n="book_subtitle">Fill in the details below and we will confirm your pick-up.</p>
+        
+        <form id="booking-form">
+            <div class="form-group">
+                <label for="name" data-i18n="form_name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" data-i18n="form_email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pickup" data-i18n="form_pickup">Pick-up Location</label>
+                <input type="text" id="pickup" placeholder="Enter origin address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="destination" data-i18n="form_destination">Travel Destination</label>
+                <input type="text" id="destination" placeholder="Enter destination address" required>
+            </div>
+
+            <div id="trip-info" style="display: none; margin-bottom: 20px; padding: 15px; background: #fef9e7; border-left: 5px solid #f1c40f; border-radius: 4px;">
+                <p><strong>Distance:</strong> <span id="dist-val">-</span></p>
+                <p><strong>Estimated Time:</strong> <span id="time-val">-</span></p>
+            </div>
+
+            <div class="form-group">
+                <label for="date" data-i18n="form_date">Date</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time" data-i18n="form_time">Time (08:00 - 22:00)</label>
+                <input type="time" id="time" name="time" min="08:00" max="22:00" required>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">
+                    Para reservar fuera de horario llamar al <strong>609492031</strong>
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="guests" data-i18n="form_passengers">Number of Passengers</label>
+                <input type="number" id="guests" name="guests" min="1" max="4" value="1" required>
+            </div>
+
+            <button type="submit" id="submit-btn" data-i18n="form_btn">Confirm Booking</button>
+            <p id="form-message"></p>
+        </form>
+    </section>
+
+    <footer>
+        <p data-i18n="footer_text">&copy; 2026 Taxi Prueba. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
