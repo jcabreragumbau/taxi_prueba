@@ -1,4 +1,4 @@
-const CALENDAR_SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpJOA5elLqyTa4-bq_eWY3pDn-PA-LTxW3upFOW0RKqXgVH3phVX9UcQcdotx8Blv2/exec';
 
 const translations = {
     en: {
