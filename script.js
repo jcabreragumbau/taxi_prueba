@@ -65,26 +65,31 @@ if (bookingForm) {
         };
 
         try {
-            // A. Envío a Google Calendar (Apps Script)
-            await fetch(CALENDAR_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(tripData)
+            const response = await fetch(CALENDAR_SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify(tripData) 
             });
+    
+            const result = await response.json();
 
-            // B. Envío de Email via EmailJS
+            if (result.result === "error" && result.message === "overlap") {
+                // Mensaje específico si la hora ya está pillada
+                msg.style.color = '#e74c3c';
+                msg.innerText = 'Lo sentimos, esa hora ya está reservada. Por favor, elige otro horario.';
+                btn.innerText = 'Confirmar Reserva';
+                btn.disabled = false;
+                return; // Detenemos el proceso (no se envía el EmailJS tampoco)
+            }
+
+            // Si todo fue bien, enviamos el email al cliente con EmailJS
             await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, tripData, EMAILJS_KEY);
 
-            formMessage.style.color = '#27ae60';
-            formMessage.innerText = '¡Reserva confirmada! Revisa tu email.';
-            bookingForm.reset();
+            msg.style.color = '#27ae60';
+            msg.innerText = '¡Reserva confirmada! Se ha añadido al calendario.';
+            this.reset();
 
         } catch (error) {
-            formMessage.style.color = '#e74c3c';
-            formMessage.innerText = 'Error al procesar la reserva.';
-        } finally {
-            submitBtn.innerText = 'Confirmar Reserva';
-            submitBtn.disabled = false;
+            // Manejo de errores generales
         }
     });
 }
