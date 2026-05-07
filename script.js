@@ -1,4 +1,4 @@
-const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMfmjob76Aqcwf4oGqseZJeI9xPo7D0wqEv4WUkNhTQIoH3KdqDNsMjFZeE924klxn/exec';
+const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygMXRVE_rJW1VKh7jwt3h1_XLKQX3gKmgVHvUUAXy1JXqbJr5UkaJX_mJceDWxEPE3/exec';
 const EMAILJS_SERVICE = 'STLIZE_service';
 const EMAILJS_TEMPLATE = 'template_hhmf1wu';
 const EMAILJS_KEY = '7IsyP95cxD43-8Jcl';
@@ -68,40 +68,45 @@ if (bookingForm) {
         };
 
         try {
-            // 1. Enviamos los datos al servidor para verificar solapamiento
-            // IMPORTANTE: No usamos mode: 'no-cors' para poder leer la respuesta JSON
+            // 1. Enviamos los datos al servidor para verificar disponibilidad
             const response = await fetch(CALENDAR_SCRIPT_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(tripData) 
             });
     
+            if (!response.ok) throw new Error("Error de conexión con el servidor");
+
             const result = await response.json();
 
-            // 2. Si el servidor detecta que la hora ya está pillada
+            // 2. Manejo de solapamiento de horario
             if (result.result === "overlap") {
                 formMessage.style.color = '#e74c3c';
                 formMessage.innerText = 'Lo sentimos, esa hora ya está reservada. Por favor, elige otro horario.';
                 submitBtn.innerText = 'Confirmar Reserva';
                 submitBtn.disabled = false;
-                return; // Detenemos todo aquí
+                return; 
             }
 
-            // 3. Si no hay solapamiento, procedemos con el envío del email al cliente
+            // 3. ÉXITO: Reserva guardada en calendario y ahora enviamos confirmación al cliente
             if (result.result === "success") {
                 submitBtn.innerText = 'Enviando confirmación...';
+                
+                // Disparamos EmailJS solo si el servidor de Google confirmó la reserva
                 await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, tripData, EMAILJS_KEY);
 
                 formMessage.style.color = '#27ae60';
-                formMessage.innerText = '¡Reserva confirmada! Se ha añadido al calendario y enviado un email.';
+                formMessage.innerText = '¡Reserva confirmada! Se ha añadido al calendario y enviado un email de confirmación.';
                 this.reset();
             } else {
-                throw new Error("Error inesperado en el servidor");
+                // Capturamos el mensaje de error real que viene de Google Apps Script
+                throw new Error(result.message || "Error desconocido en el servidor");
             }
 
         } catch (error) {
-            console.error("Error en la reserva:", error);
+            console.error("Error detallado:", error);
             formMessage.style.color = '#e74c3c';
-            formMessage.innerText = 'Error al conectar con el sistema. Por favor, inténtalo de nuevo.';
+            // Mostramos el error específico para saber qué falla (ej: falta de permisos)
+            formMessage.innerText = 'No se pudo completar la reserva: ' + error.message;
         } finally {
             submitBtn.innerText = 'Confirmar Reserva';
             submitBtn.disabled = false;
