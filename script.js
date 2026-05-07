@@ -42,6 +42,7 @@ if (bookingForm) {
         const timeStr = document.getElementById('time').value;
         const hour = parseInt(timeStr.split(':')[0]);
 
+        // Validación de horario (08:00 - 22:00)
         if (hour < 8 || hour >= 22) {
             alert("Selecciona una hora entre las 08:00 y las 22:00 o llama al 609492031.");
             return;
@@ -50,13 +51,15 @@ if (bookingForm) {
         const submitBtn = document.getElementById('submit-btn');
         const formMessage = document.getElementById('form-message');
         
-        submitBtn.innerText = 'Procesando...';
+        // Estado de carga visual
+        submitBtn.innerText = 'Verificando disponibilidad...';
         submitBtn.disabled = true;
+        formMessage.innerText = '';
 
         const tripData = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value, // Captura del teléfono
+            phone: document.getElementById('phone').value,
             pickup: document.getElementById('pickup').value,
             destination: document.getElementById('destination').value,
             date: document.getElementById('date').value,
@@ -65,6 +68,8 @@ if (bookingForm) {
         };
 
         try {
+            // 1. Enviamos los datos al servidor para verificar solapamiento
+            // IMPORTANTE: No usamos mode: 'no-cors' para poder leer la respuesta JSON
             const response = await fetch(CALENDAR_SCRIPT_URL, { 
                 method: 'POST', 
                 body: JSON.stringify(tripData) 
@@ -72,31 +77,45 @@ if (bookingForm) {
     
             const result = await response.json();
 
-            if (result.result === "error" && result.message === "overlap") {
-                // Mensaje específico si la hora ya está pillada
-                msg.style.color = '#e74c3c';
-                msg.innerText = 'Lo sentimos, esa hora ya está reservada. Por favor, elige otro horario.';
-                btn.innerText = 'Confirmar Reserva';
-                btn.disabled = false;
-                return; // Detenemos el proceso (no se envía el EmailJS tampoco)
+            // 2. Si el servidor detecta que la hora ya está pillada
+            if (result.result === "overlap") {
+                formMessage.style.color = '#e74c3c';
+                formMessage.innerText = 'Lo sentimos, esa hora ya está reservada. Por favor, elige otro horario.';
+                submitBtn.innerText = 'Confirmar Reserva';
+                submitBtn.disabled = false;
+                return; // Detenemos todo aquí
             }
 
-            // Si todo fue bien, enviamos el email al cliente con EmailJS
-            await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, tripData, EMAILJS_KEY);
+            // 3. Si no hay solapamiento, procedemos con el envío del email al cliente
+            if (result.result === "success") {
+                submitBtn.innerText = 'Enviando confirmación...';
+                await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, tripData, EMAILJS_KEY);
 
-            msg.style.color = '#27ae60';
-            msg.innerText = '¡Reserva confirmada! Se ha añadido al calendario.';
-            this.reset();
+                formMessage.style.color = '#27ae60';
+                formMessage.innerText = '¡Reserva confirmada! Se ha añadido al calendario y enviado un email.';
+                this.reset();
+            } else {
+                throw new Error("Error inesperado en el servidor");
+            }
 
         } catch (error) {
-            // Manejo de errores generales
+            console.error("Error en la reserva:", error);
+            formMessage.style.color = '#e74c3c';
+            formMessage.innerText = 'Error al conectar con el sistema. Por favor, inténtalo de nuevo.';
+        } finally {
+            submitBtn.innerText = 'Confirmar Reserva';
+            submitBtn.disabled = false;
         }
     });
 }
 
+// Inicialización de idioma y selectores
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('preferredLanguage') || 'es';
     setLanguage(savedLang);
 });
 
-document.getElementById('language-selector').addEventListener('change', (e) => setLanguage(e.target.value));
+const langSelector = document.getElementById('language-selector');
+if (langSelector) {
+    langSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+}
