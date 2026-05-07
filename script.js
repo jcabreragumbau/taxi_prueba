@@ -21,42 +21,42 @@ const translations = {
 };
 
 // 3. LÓGICA DE GOOGLE MAPS (MODERNA 2026)
-let autocompletePickup, autocompleteDest;
+let pickupWidget, destWidget;
 
 async function initGoogleServices() {
     try {
-        // Importamos las librerías "New" obligatorias para clientes después de 2025
-        const { Autocomplete } = await google.maps.importLibrary("places");
-        const { DistanceMatrixService } = await google.maps.importLibrary("routes");
+        // Importamos las librerías New (Places y Routes)
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+        
+        // Creamos el componente de Recogida
+        pickupWidget = new PlaceAutocompleteElement({
+            placeholder: "Introduce punto de origen"
+        });
+        pickupWidget.id = "pickup-input";
+        document.getElementById('pickup-container').appendChild(pickupWidget);
 
-        const pickupInput = document.getElementById('pickup');
-        const destInput = document.getElementById('destination');
+        // Creamos el componente de Destino
+        destWidget = new PlaceAutocompleteElement({
+            placeholder: "Introduce destino"
+        });
+        destWidget.id = "dest-input";
+        document.getElementById('destination-container').appendChild(destWidget);
 
-        if (pickupInput && destInput) {
-            // Configuración de Autocompletado Moderno
-            const options = {
-                fields: ["formatted_address", "geometry"],
-                types: ["address"]
-            };
+        // Escuchar cuando el usuario selecciona una dirección
+        pickupWidget.addEventListener('gmp-placeselect', calculateTrip);
+        destWidget.addEventListener('gmp-placeselect', calculateTrip);
 
-            autocompletePickup = new Autocomplete(pickupInput, options);
-            autocompleteDest = new Autocomplete(destInput, options);
-
-            // Escuchar cambios para calcular la ruta
-            autocompletePickup.addListener('place_changed', calculateTrip);
-            autocompleteDest.addListener('place_changed', calculateTrip);
-        }
     } catch (error) {
-        console.error("Error al cargar las librerías de Google Maps:", error);
+        console.error("Error al cargar componentes de Google Maps:", error);
     }
 }
 
 async function calculateTrip() {
-    const origin = document.getElementById('pickup').value;
-    const destination = document.getElementById('destination').value;
+    // Obtenemos las direcciones de los nuevos widgets
+    const origin = pickupWidget.value;
+    const destination = destWidget.value;
 
     if (origin && destination) {
-        // Usamos la Routes API para el cálculo de distancia
         const { DistanceMatrixService } = await google.maps.importLibrary("routes");
         const service = new DistanceMatrixService();
         
@@ -79,66 +79,61 @@ async function calculateTrip() {
 
 // 4. ENVÍO DE FORMULARIO (CALENDAR + EMAIL)
 const bookingForm = document.getElementById('booking-form');
-
 if (bookingForm) {
     bookingForm.addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const timeStr = document.getElementById('time').value;
-        const hour = parseInt(timeStr.split(':')[0]);
-
-        // Validación de horario (08:00 - 22:00)
-        if (hour < 8 || hour >= 22) {
-            alert("Selecciona un horario entre las 08:00 y las 22:00.");
-            return;
-        }
-
         const submitBtn = document.getElementById('submit-btn');
         const formMessage = document.getElementById('form-message');
         
-        submitBtn.innerText = 'Guardando reserva...';
+        // Extraemos las direcciones finales de los widgets
+        const pickupAddr = pickupWidget.value;
+        const destAddr = destWidget.value;
+
+        if (!pickupAddr || !destAddr) {
+            alert("Por favor, selecciona direcciones válidas de la lista.");
+            return;
+        }
+
+        submitBtn.innerText = 'Enviando...';
         submitBtn.disabled = true;
 
         const tripData = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            pickup: document.getElementById('pickup').value,
-            destination: document.getElementById('destination').value,
+            pickup: pickupAddr,
+            destination: destAddr,
             date: document.getElementById('date').value,
-            time: timeStr,
+            time: document.getElementById('time').value,
             passengers: document.getElementById('guests').value,
             distance: document.getElementById('dist-val').innerText,
             duration: document.getElementById('time-val').innerText
         };
 
         try {
-            // A. Guardar en Google Calendar (vía Apps Script)
             await fetch(CALENDAR_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Evita bloqueos de seguridad de Google Apps Script
+                mode: 'no-cors',
                 body: JSON.stringify(tripData)
             });
 
-            // B. Enviar Email de confirmación vía EmailJS
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, tripData, EMAILJS_PUBLIC_KEY);
 
             formMessage.style.color = '#27ae60';
-            formMessage.innerText = '¡Reserva completada! Revisa tu calendario y email.';
+            formMessage.innerText = '¡Reserva confirmada!';
             bookingForm.reset();
             document.getElementById('trip-info').style.display = 'none';
-
         } catch (error) {
-            formMessage.style.color = '#e74c3c';
-            formMessage.innerText = 'Error al procesar la reserva. Inténtalo de nuevo.';
+            formMessage.innerText = 'Error en la reserva.';
         } finally {
             submitBtn.innerText = 'Confirmar Reserva';
             submitBtn.disabled = false;
         }
     });
 }
-
 // 5. TRADUCCIÓN Y ARRANQUE
 function setLanguage(lang) {
+    // 1. Traducción de elementos estándar de la página
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
@@ -146,15 +141,30 @@ function setLanguage(lang) {
         }
     });
     localStorage.setItem('preferredLanguage', lang);
+
+    // 2. Traducción específica para los nuevos componentes de Google
+    // Como los widgets se crean dinámicamente, actualizamos sus placeholders aquí
+    if (pickupWidget && destWidget) {
+        const isEs = lang === 'es';
+        pickupWidget.placeholder = isEs ? "Introduce punto de origen" : "Enter pick-up location";
+        destWidget.placeholder = isEs ? "Introduce destino" : "Enter destination";
+    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// El evento debe ser async para esperar a la carga de librerías de Google
+document.addEventListener('DOMContentLoaded', async () => {
     const savedLang = localStorage.getItem('preferredLanguage') || 'es';
-    setLanguage(savedLang);
     
-    // Inicialización asíncrona necesaria en 2026
+    // Primero traducimos el contenido estático
+    setLanguage(savedLang);
+
+    // Verificamos e iniciamos los servicios de Google de forma asíncrona
     if (typeof google !== 'undefined') {
-        initGoogleServices();
+        await initGoogleServices();
+        
+        // Ejecutamos setLanguage de nuevo para asegurar que los widgets 
+        // recién creados aparezcan en el idioma correcto
+        setLanguage(savedLang);
     }
 });
 
