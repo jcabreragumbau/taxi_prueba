@@ -6,12 +6,6 @@
     <title>Taxi Prueba - Professional Transport</title>
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script>
-  (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Refer to v. Status."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-    key: "AIzaSyCDfGiRwp8vlhJfCbfkNtN0IxhjcsQNsLY",
-    v: "weekly"
-  });
-</script>
 </head>
 <body>
 
@@ -39,40 +33,43 @@
 
     <section id="book" class="booking-section">
         <h2 data-i18n="book_title">Book Your Trip</h2>
+        
         <form id="booking-form">
             <div class="form-group">
                 <label for="name" data-i18n="form_name">Full Name</label>
                 <input type="text" id="name" required>
             </div>
+            
             <div class="form-group">
                 <label for="email" data-i18n="form_email">Email Address</label>
                 <input type="email" id="email" required>
             </div>
+
             <div class="form-group">
-                <label for="pickup" data-i18n="form_pickup">Punto de Recogida</label>
-                <div id="pickup-container"></div> 
-            </div>
-            <div class="form-group">
-                <label for="destination" data-i18n="form_destination">Destino del Viaje</label>
-                <div id="destination-container"></div>
+                <label for="pickup" data-i18n="form_pickup">Pick-up Location</label>
+                <input type="text" id="pickup" placeholder="Street, City, Postal Code" required>
             </div>
 
-            <div id="trip-info" style="display: none; margin-bottom: 20px; padding: 15px; background: #fef9e7; border-left: 5px solid #f1c40f;">
-                <p><strong>Distance:</strong> <span id="dist-val">-</span></p>
-                <p><strong>Est. Time:</strong> <span id="time-val">-</span></p>
+            <div class="form-group">
+                <label for="destination" data-i18n="form_destination">Travel Destination</label>
+                <input type="text" id="destination" placeholder="Street, City, Postal Code" required>
             </div>
 
             <div class="form-group">
                 <label for="date" data-i18n="form_date">Date</label>
                 <input type="date" id="date" required>
             </div>
+
             <div class="form-group">
                 <label for="time" data-i18n="form_time">Time (08:00 - 22:00)</label>
                 <input type="time" id="time" min="08:00" max="22:00" required>
-                <small>Para reservar fuera de horario llamar al 609492031</small>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">
+                    Para reservar fuera de horario llamar al <strong>609492031</strong>
+                </p>
             </div>
+
             <div class="form-group">
-                <label for="guests" data-i18n="form_passengers">Passengers</label>
+                <label for="guests" data-i18n="form_passengers">Number of Passengers</label>
                 <input type="number" id="guests" min="1" max="4" value="1" required>
             </div>
 
