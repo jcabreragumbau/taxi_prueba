@@ -1,155 +1,92 @@
-// 1. Updated Translation Dictionary for Taxi
+const CALENDAR_SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+
 const translations = {
     en: {
-        nav_home: "Home",
-        nav_rates: "Rates",
-        nav_location: "Area",
-        nav_book: "Book a Taxi",
-        footer_text: "© 2026 Taxi Prueba. All rights reserved.",
-        hero_title: "Your Reliable Ride, Anytime",
-        hero_subtitle: "Safe, professional transport services at your fingertips.",
-        hero_btn: "Book Now",
-        book_title: "Book Your Trip",
-        book_subtitle: "Fill in the details below and we will confirm your pick-up.",
-        form_name: "Full Name",
-        form_email: "Email Address",
-        form_pickup: "Pick-up Location",
-        form_destination: "Travel Destination",
-        form_date: "Date",
-        form_time: "Time",
-        form_passengers: "Number of Passengers (1-4)",
-        form_btn: "Confirm Booking"
+        nav_home: "Home", nav_book: "Book a Taxi", footer_text: "© 2026 Taxi Prueba.",
+        hero_title: "Your Reliable Ride", hero_subtitle: "Safe transport.", hero_btn: "Book Now",
+        book_title: "Book Your Trip", form_name: "Full Name", form_email: "Email",
+        form_pickup: "Pick-up", form_destination: "Destination", form_date: "Date",
+        form_time: "Time", form_passengers: "Passengers (1-4)", form_btn: "Confirm Booking"
     },
     es: {
-        nav_home: "Inicio",
-        nav_rates: "Tarifas",
-        nav_location: "Zona",
-        nav_book: "Reservar Taxi",
-        footer_text: "© 2026 Taxi Prueba. Todos los derechos reservados.",
-        hero_title: "Tu Viaje Confiable, a Cualquier Hora",
-        hero_subtitle: "Servicios de transporte seguros y profesionales.",
-        hero_btn: "Reservar Ahora",
-        book_title: "Reserva Tu Viaje",
-        book_subtitle: "Completa los detalles y confirmaremos tu recogida.",
-        form_name: "Nombre Completo",
-        form_email: "Correo Electrónico",
-        form_pickup: "Punto de Recogida",
-        form_destination: "Destino del Viaje",
-        form_date: "Fecha",
-        form_time: "Hora",
-        form_passengers: "Número de Pasajeros (1-4)",
-        form_btn: "Confirmar Reserva"
+        nav_home: "Inicio", nav_book: "Reservar Taxi", footer_text: "© 2026 Taxi Prueba.",
+        hero_title: "Tu Viaje Confiable", hero_subtitle: "Transporte seguro.", hero_btn: "Reservar Ahora",
+        book_title: "Reserva Tu Viaje", form_name: "Nombre", form_email: "Correo",
+        form_pickup: "Recogida", form_destination: "Destino", form_date: "Fecha",
+        form_time: "Hora", form_passengers: "Pasajeros (1-4)", form_btn: "Confirmar Reserva"
     }
 };
 
-// 2. Language logic
-function setLanguage(languageCode) {
-    const elements = document.querySelectorAll('[data-i18n]');
-    elements.forEach(element => {
-        const translationKey = element.getAttribute('data-i18n');
-        if (translations[languageCode] && translations[languageCode][translationKey]) {
-            element.innerText = translations[languageCode][translationKey];
-        }
+function setLanguage(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) el.innerText = translations[lang][key];
     });
-    localStorage.setItem('preferredLanguage', languageCode);
 }
 
-// 3. Google Maps Background Logic (Headless)
-let autocompletePickup, autocompleteDest;
-
-function initGoogleServices() {
-    const pickupInput = document.getElementById('pickup');
-    const destInput = document.getElementById('destination');
-
-    if (pickupInput && destInput) {
-        autocompletePickup = new google.maps.places.Autocomplete(pickupInput);
-        autocompleteDest = new google.maps.places.Autocomplete(destInput);
-
-        autocompletePickup.addListener('place_changed', calculateTrip);
-        autocompleteDest.addListener('place_changed', calculateTrip);
-    }
+let autocompleteP, autocompleteD;
+function initGoogle() {
+    autocompleteP = new google.maps.places.Autocomplete(document.getElementById('pickup'));
+    autocompleteD = new google.maps.places.Autocomplete(document.getElementById('destination'));
+    [autocompleteP, autocompleteD].forEach(a => a.addListener('place_changed', calculateDistance));
 }
 
-function calculateTrip() {
+function calculateDistance() {
     const origin = document.getElementById('pickup').value;
-    const destination = document.getElementById('destination').value;
-
-    if (origin && destination) {
+    const dest = document.getElementById('destination').value;
+    if (origin && dest) {
         const service = new google.maps.DistanceMatrixService();
-        service.getDistanceMatrix({
-            origins: [origin],
-            destinations: [destination],
-            travelMode: 'DRIVING',
-        }, (response, status) => {
+        service.getDistanceMatrix({ origins: [origin], destinations: [dest], travelMode: 'DRIVING' }, (res, status) => {
             if (status === 'OK') {
-                const results = response.rows[0].elements[0];
-                if (results.status === "OK") {
-                    document.getElementById('trip-info').style.display = 'block';
-                    document.getElementById('dist-val').innerText = results.distance.text;
-                    document.getElementById('time-val').innerText = results.duration.text;
-                }
+                const data = res.rows[0].elements[0];
+                document.getElementById('trip-info').style.display = 'block';
+                document.getElementById('dist-val').innerText = data.distance.text;
+                document.getElementById('time-val').innerText = data.duration.text;
             }
         });
     }
 }
 
-// 4. Booking Form Logic
-const bookingForm = document.getElementById('booking-form');
+document.getElementById('booking-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const hour = parseInt(document.getElementById('time').value.split(':')[0]);
+    if (hour < 8 || hour >= 22) return alert("Select 08:00 - 22:00 or call 609492031.");
 
-if (bookingForm) {
-    bookingForm.addEventListener('submit', async function(event) {
-        event.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const msg = document.getElementById('form-message');
+    btn.innerText = 'Saving...';
+    btn.disabled = true;
 
-        const time = document.getElementById('time').value;
-        const [hour] = time.split(':').map(Number);
+    const tripData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        pickup: document.getElementById('pickup').value,
+        destination: document.getElementById('destination').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        passengers: document.getElementById('guests').value,
+        distance: document.getElementById('dist-val').innerText
+    };
 
-        // Hour Validation (08:00 to 22:00)
-        if (hour < 8 || hour >= 22) {
-            alert("Please select a time between 08:00 and 22:00. Call 609492031 for off-hours bookings.");
-            return;
-        }
+    try {
+        // 1. Save to Google Calendar
+        await fetch(CALENDAR_SCRIPT_URL, { method: 'POST', body: JSON.stringify(tripData) });
 
-        const submitBtn = document.getElementById('submit-btn');
-        const formMessage = document.getElementById('form-message');
-        
-        submitBtn.innerText = 'Requesting Taxi...';
-        submitBtn.disabled = true;
+        // 2. Send Email
+        await emailjs.send('STLIZE_service', 'template_hhmf1wu', tripData, '7IsyP95cxD43-8Jcl');
 
-        try {
-            // Prepare data for EmailJS
-            const templateParams = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                pickup: document.getElementById('pickup').value,
-                destination: document.getElementById('destination').value,
-                date: document.getElementById('date').value,
-                time: time,
-                passengers: document.getElementById('guests').value,
-                distance: document.getElementById('dist-val').innerText,
-                duration: document.getElementById('time-val').innerText
-            };
-            
-            // Note: Replace with your actual EmailJS credentials
-            await emailjs.send('STLIZE_service', 'template_hhmf1wu', templateParams, '7IsyP95cxD43-8Jcl');
+        msg.style.color = '#27ae60';
+        msg.innerText = 'Trip confirmed and added to calendar!';
+        document.getElementById('booking-form').reset();
+    } catch (err) {
+        msg.innerText = 'Error saving booking.';
+    } finally {
+        btn.innerText = 'Confirm Booking';
+        btn.disabled = false;
+    }
+});
 
-            formMessage.style.color = '#27ae60';
-            formMessage.innerText = `Booking request sent! We will contact you shortly.`;
-            bookingForm.reset();
-            document.getElementById('trip-info').style.display = 'none';
-
-        } catch (error) {
-            formMessage.style.color = '#e74c3c';
-            formMessage.innerText = 'Error sending request. Please try again.';
-        } finally {
-            submitBtn.innerText = 'Confirm Booking';
-            submitBtn.disabled = false;
-        }
-    });
-}
-
-// Startup
 document.addEventListener('DOMContentLoaded', () => {
-    const savedLanguage = localStorage.getItem('preferredLanguage') || 'en'; 
-    setLanguage(savedLanguage);
-    if (typeof google !== 'undefined') initGoogleServices();
+    setLanguage(localStorage.getItem('preferredLanguage') || 'en');
+    if (typeof google !== 'undefined') initGoogle();
 });
