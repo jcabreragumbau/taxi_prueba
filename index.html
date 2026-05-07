@@ -15,8 +15,6 @@
         <nav>
             <ul>
                 <li><a href="index.html" data-i18n="nav_home">Home</a></li>
-                <li><a href="rates.html" data-i18n="nav_rates">Rates</a></li>
-                <li><a href="location.html" data-i18n="nav_location">Service Area</a></li>
                 <li><a href="#book" class="nav-cta" data-i18n="nav_book">Book a Taxi</a></li>
                 <li>
                     <select id="language-selector">
@@ -36,50 +34,41 @@
 
     <section id="book" class="booking-section">
         <h2 data-i18n="book_title">Book Your Trip</h2>
-        <p data-i18n="book_subtitle">Fill in the details below and we will confirm your pick-up.</p>
-        
         <form id="booking-form">
             <div class="form-group">
                 <label for="name" data-i18n="form_name">Full Name</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" required>
             </div>
-            
             <div class="form-group">
                 <label for="email" data-i18n="form_email">Email Address</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" required>
             </div>
-
             <div class="form-group">
                 <label for="pickup" data-i18n="form_pickup">Pick-up Location</label>
-                <input type="text" id="pickup" placeholder="Enter origin address" required>
+                <input type="text" id="pickup" required>
             </div>
-
             <div class="form-group">
                 <label for="destination" data-i18n="form_destination">Travel Destination</label>
-                <input type="text" id="destination" placeholder="Enter destination address" required>
+                <input type="text" id="destination" required>
             </div>
 
-            <div id="trip-info" style="display: none; margin-bottom: 20px; padding: 15px; background: #fef9e7; border-left: 5px solid #f1c40f; border-radius: 4px;">
+            <div id="trip-info" style="display: none; margin-bottom: 20px; padding: 15px; background: #fef9e7; border-left: 5px solid #f1c40f;">
                 <p><strong>Distance:</strong> <span id="dist-val">-</span></p>
-                <p><strong>Estimated Time:</strong> <span id="time-val">-</span></p>
+                <p><strong>Est. Time:</strong> <span id="time-val">-</span></p>
             </div>
 
             <div class="form-group">
                 <label for="date" data-i18n="form_date">Date</label>
-                <input type="date" id="date" name="date" required>
+                <input type="date" id="date" required>
             </div>
-
             <div class="form-group">
                 <label for="time" data-i18n="form_time">Time (08:00 - 22:00)</label>
-                <input type="time" id="time" name="time" min="08:00" max="22:00" required>
-                <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">
-                    Para reservar fuera de horario llamar al <strong>609492031</strong>
-                </p>
+                <input type="time" id="time" min="08:00" max="22:00" required>
+                <small>Para reservar fuera de horario llamar al 609492031</small>
             </div>
-
             <div class="form-group">
-                <label for="guests" data-i18n="form_passengers">Number of Passengers</label>
-                <input type="number" id="guests" name="guests" min="1" max="4" value="1" required>
+                <label for="guests" data-i18n="form_passengers">Passengers</label>
+                <input type="number" id="guests" min="1" max="4" value="1" required>
             </div>
 
             <button type="submit" id="submit-btn" data-i18n="form_btn">Confirm Booking</button>
