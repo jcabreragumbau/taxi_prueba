@@ -130,7 +130,7 @@ if (bookingForm) {
             };
             
             // Note: Replace with your actual EmailJS credentials
-            await emailjs.send('STLIZE_service', 'template_taxi', templateParams, '7IsyP95cxD43-8Jcl');
+            await emailjs.send('STLIZE_service', 'template_hhmf1wu', templateParams, '7IsyP95cxD43-8Jcl');
 
             formMessage.style.color = '#27ae60';
             formMessage.innerText = `Booking request sent! We will contact you shortly.`;
