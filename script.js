@@ -1,7 +1,7 @@
 const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpJOA5elLqyTa4-bq_eWY3pDn-PA-LTxW3upFOW0RKqXgVH3phVX9UcQcdotx8Blv2/exec';
-const EMAILJS_SERVICE_ID = 'STLIZE_service';
-const EMAILJS_TEMPLATE_ID = 'template_hhmf1wu';
-const EMAILJS_PUBLIC_KEY = '7IsyP95cxD43-8Jcl';
+const EMAILJS_SERVICE = 'STLIZE_service';
+const EMAILJS_TEMPLATE = 'template_hhmf1wu';
+const EMAILJS_KEY = '7IsyP95cxD43-8Jcl';
 // 2. TRADUCCIONES (Incluyendo el nuevo campo de teléfono)
 const translations = {
     en: {
