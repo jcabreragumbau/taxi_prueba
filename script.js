@@ -25,7 +25,7 @@ let autocompletePickup, autocompleteDest;
 
 async function initGoogleServices() {
     try {
-        // Importación moderna de librerías para evitar errores de "Legacy API"
+        // Importamos las librerías "New" obligatorias para clientes después de 2025
         const { Autocomplete } = await google.maps.importLibrary("places");
         const { DistanceMatrixService } = await google.maps.importLibrary("routes");
 
@@ -33,15 +33,21 @@ async function initGoogleServices() {
         const destInput = document.getElementById('destination');
 
         if (pickupInput && destInput) {
-            autocompletePickup = new Autocomplete(pickupInput);
-            autocompleteDest = new Autocomplete(destInput);
+            // Configuración de Autocompletado Moderno
+            const options = {
+                fields: ["formatted_address", "geometry"],
+                types: ["address"]
+            };
 
-            // Escuchar cambios para calcular distancia
+            autocompletePickup = new Autocomplete(pickupInput, options);
+            autocompleteDest = new Autocomplete(destInput, options);
+
+            // Escuchar cambios para calcular la ruta
             autocompletePickup.addListener('place_changed', calculateTrip);
             autocompleteDest.addListener('place_changed', calculateTrip);
         }
     } catch (error) {
-        console.error("Error cargando librerías de Google:", error);
+        console.error("Error al cargar las librerías de Google Maps:", error);
     }
 }
 
@@ -50,6 +56,7 @@ async function calculateTrip() {
     const destination = document.getElementById('destination').value;
 
     if (origin && destination) {
+        // Usamos la Routes API para el cálculo de distancia
         const { DistanceMatrixService } = await google.maps.importLibrary("routes");
         const service = new DistanceMatrixService();
         
@@ -82,14 +89,14 @@ if (bookingForm) {
 
         // Validación de horario (08:00 - 22:00)
         if (hour < 8 || hour >= 22) {
-            alert("Por favor selecciona un horario entre las 08:00 y las 22:00.");
+            alert("Selecciona un horario entre las 08:00 y las 22:00.");
             return;
         }
 
         const submitBtn = document.getElementById('submit-btn');
         const formMessage = document.getElementById('form-message');
         
-        submitBtn.innerText = 'Procesando...';
+        submitBtn.innerText = 'Guardando reserva...';
         submitBtn.disabled = true;
 
         const tripData = {
@@ -108,22 +115,21 @@ if (bookingForm) {
             // A. Guardar en Google Calendar (vía Apps Script)
             await fetch(CALENDAR_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Necesario para evitar bloqueos de Google
+                mode: 'no-cors', // Evita bloqueos de seguridad de Google Apps Script
                 body: JSON.stringify(tripData)
             });
 
-            // B. Enviar Email de confirmación
+            // B. Enviar Email de confirmación vía EmailJS
             await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, tripData, EMAILJS_PUBLIC_KEY);
 
             formMessage.style.color = '#27ae60';
-            formMessage.innerText = '¡Viaje reservado! Se ha añadido a nuestro calendario.';
+            formMessage.innerText = '¡Reserva completada! Revisa tu calendario y email.';
             bookingForm.reset();
             document.getElementById('trip-info').style.display = 'none';
 
         } catch (error) {
-            console.error(error);
             formMessage.style.color = '#e74c3c';
-            formMessage.innerText = 'Hubo un error al procesar tu reserva.';
+            formMessage.innerText = 'Error al procesar la reserva. Inténtalo de nuevo.';
         } finally {
             submitBtn.innerText = 'Confirmar Reserva';
             submitBtn.disabled = false;
@@ -135,7 +141,9 @@ if (bookingForm) {
 function setLanguage(lang) {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (translations[lang][key]) el.innerText = translations[lang][key];
+        if (translations[lang] && translations[lang][key]) {
+            el.innerText = translations[lang][key];
+        }
     });
     localStorage.setItem('preferredLanguage', lang);
 }
@@ -144,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('preferredLanguage') || 'es';
     setLanguage(savedLang);
     
-    // Iniciar Google Maps con el nuevo sistema de 2026
+    // Inicialización asíncrona necesaria en 2026
     if (typeof google !== 'undefined') {
         initGoogleServices();
     }
