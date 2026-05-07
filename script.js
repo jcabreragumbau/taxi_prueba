@@ -1,4 +1,4 @@
-const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpJOA5elLqyTa4-bq_eWY3pDn-PA-LTxW3upFOW0RKqXgVH3phVX9UcQcdotx8Blv2/exec';
+const CALENDAR_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMfmjob76Aqcwf4oGqseZJeI9xPo7D0wqEv4WUkNhTQIoH3KdqDNsMjFZeE924klxn/exec';
 const EMAILJS_SERVICE = 'STLIZE_service';
 const EMAILJS_TEMPLATE = 'template_hhmf1wu';
 const EMAILJS_KEY = '7IsyP95cxD43-8Jcl';
